@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Protocolli sanitari – Medicina del lavoro</title>
+<style>
+:root{font-family:system-ui,-apple-system,sans-serif;color:#183047;background:#f2f5f9}*{box-sizing:border-box}body{margin:0}header{background:#123b55;color:white;padding:23px max(16px,calc((100vw - 1050px)/2))}header h1{margin:0;font-size:1.45rem}header p{margin:6px 0 0;color:#d5e7f0}main{max-width:1050px;margin:auto;padding:20px 14px 65px}.panel{background:#fff;border:1px solid #dce6ec;border-radius:14px;padding:20px;margin:0 0 16px;box-shadow:0 2px 12px #1b35400a}h2{font-size:1.14rem;margin:0 0 12px}p{line-height:1.5}.sub{color:#587081;font-size:.92rem}.row{display:flex;gap:12px;flex-wrap:wrap}.field{flex:1;min-width:220px}label{display:block;font-weight:650;margin:0 0 6px}select,input,textarea{width:100%;padding:11px;border:1px solid #b9cbd8;border-radius:9px;font:inherit;color:#142f42;background:white}textarea{min-height:80px;resize:vertical}.btn{padding:11px 15px;background:#166185;border:0;border-radius:9px;color:#fff;cursor:pointer;font-weight:650;font-size:.96rem}.btn.secondary{background:#e5edf3;color:#143b56}.btn.warn{background:#a33f30}.buttons{display:flex;gap:8px;flex-wrap:wrap;margin-top:15px}.chips{display:flex;flex-wrap:wrap;gap:9px}.chip{display:flex;gap:7px;align-items:flex-start;padding:9px 11px;border:1px solid #cddce4;border-radius:10px;background:#f9fbfc;max-width:100%}.chip input{width:auto;margin:3px 0 0}.chip span{font-size:.94rem}.note{border-left:4px solid #e5a74d;background:#fff9eb;padding:10px 13px;border-radius:5px}.output{display:none}.output.show{display:block}.small{font-size:.85rem;color:#526b7c}.status{font-size:.9rem;color:#176c51;margin-top:8px;min-height:20px}.hide{display:none}@media print{header,.edit,.buttons,.status,.no-print{display:none!important}body{background:white}.panel{border:0;box-shadow:none;padding:8px 0;margin:0}main{padding:0}.output{display:block!important}.note{background:white}}
+</style></head><body>
+<header><h1>Protocolli sanitari</h1><p>Assistente per la proposta e la personalizzazione dei protocolli – separato da LUMEN</p></header>
+<main>
+<section class="panel edit"><h2>1. Scegli la mansione</h2><div class="row"><div class="field"><label for="role">Mansione</label><select id="role"></select></div><div class="field"><label for="company">Azienda / committente (facoltativo)</label><input id="company" placeholder="Es. Sermolab – azienda visitata"></div></div>
+<div class="row" style="margin-top:12px"><div class="field"><label for="newRole">Aggiungi una mansione personalizzata</label><input id="newRole" placeholder="Es. addetto confezionamento"></div><div style="align-self:end"><button class="btn secondary" id="addRole">Aggiungi mansione</button></div></div>
+<p class="sub">La selezione carica un modello modificabile. I modelli non sostituiscono la valutazione dei rischi aziendale.</p></section>
+<section class="panel edit"><h2>2. Rischi da confermare in base al DVR</h2><div id="risks" class="chips"></div><div class="row" style="margin-top:14px"><div class="field"><label for="otherRisk">Ulteriori rischi specifici</label><input id="otherRisk" placeholder="Inserisci rischio e clicca Aggiungi"></div><div style="align-self:end"><button class="btn secondary" id="addRisk">Aggiungi rischio</button></div></div></section>
+<section class="panel edit"><h2>3. Accertamenti e periodicità proposti</h2><div id="exams" class="chips"></div><div class="row" style="margin-top:14px"><div class="field"><label for="otherExam">Ulteriore accertamento</label><input id="otherExam" placeholder="Es. esame mirato a rischio specifico"></div><div style="align-self:end"><button class="btn secondary" id="addExam">Aggiungi esame</button></div></div>
+<div class="row" style="margin-top:14px"><div class="field"><label for="frequency">Periodicità della visita (proposta da personalizzare)</label><select id="frequency"><option>Da definire in base al DVR e al giudizio del medico competente</option><option>Annuale</option><option>Biennale</option><option>Quinquennale</option><option>Altra periodicità – specificare nelle note</option></select></div><div class="field"><label for="notes">Note cliniche / prescrizioni / riferimenti DVR</label><textarea id="notes" placeholder="Specificare esposizioni, livelli e motivazione delle scelte"></textarea></div></div></section>
+<section class="panel edit"><h2>4. Anteprima e salvataggio</h2><div class="note"><strong>Attenzione:</strong> i rischi e gli accertamenti sono una traccia orientativa, non un protocollo approvato. La sorveglianza sanitaria, l'indicazione degli esami e la periodicità devono essere motivate dal DVR, dalle esposizioni effettive, dalla normativa applicabile e dalla valutazione del medico competente. Gli esami non si prescrivono in modo indiscriminato per la sola mansione.</div>
+<div class="buttons"><button class="btn" id="preview">Genera anteprima</button><button class="btn secondary" id="save">Salva protocollo nel dispositivo</button><button class="btn secondary" id="export">Esporta JSON</button><button class="btn secondary" id="importBtn">Importa JSON</button><button class="btn secondary" id="print">Stampa / PDF</button></div><input class="hide" type="file" id="file" accept=".json,application/json"><div class="status" id="status" role="status"></div></section>
+<section class="panel output" id="result"><h2>Protocollo sanitario – bozza da validare</h2><div id="content"></div><p class="small">Documento di supporto alla predisposizione del protocollo sanitario. Necessaria validazione professionale prima dell'uso.</p></section>
+</main>
+<script>
+const R=['Videoterminale (VDT)','Movimentazione manuale dei carichi (MMC)','Movimenti ripetitivi arti superiori','Posture incongrue / prolungate','Rumore','Vibrazioni mano-braccio','Vibrazioni corpo intero','Agenti chimici','Agenti biologici','Polveri / aerosol','Microclima / calore','Lavoro notturno','Stress lavoro-correlato','Rischio di caduta / lavori in quota','Guida di veicoli','Ferite / tagli','Radiazioni ottiche artificiali','Campi elettromagnetici'];
+const E=['Visita medica mirata ai rischi','Valutazione apparato muscoloscheletrico','Valutazione visiva mirata / visiotest se indicato','Audiometria se indicata da esposizione a rumore','Spirometria se indicata da esposizione respiratoria','Valutazione dermatologica mirata','Valutazione cardiocircolatoria mirata','ECG solo se clinicamente indicato','Esami ematochimici mirati all\'esposizione','Valutazione per lavoro notturno','Valutazione idoneità alla guida per rischi specifici','Accertamenti biologici mirati all\'esposizione'];
+const P={
+'Barista':{r:[2,3,7,10,15],e:[0,1,5]},
+'Cuoco / aiuto cuoco':{r:[1,2,3,7,10,15],e:[0,1,5]},
+'Cameriere':{r:[1,2,3,10],e:[0,1]},
+'Addetto pulizie':{r:[1,2,3,7,8,10],e:[0,1,5]},
+'Magazziniere':{r:[1,2,3,4,6,9,14],e:[0,1,3,4]},
+'Autista':{r:[3,6,11,14],e:[0,1,9,10]},
+'Impiegato videoterminalista':{r:[0,3,12],e:[0,2]},
+'Operaio generico':{r:[1,2,3,4,5,7,9],e:[0,1,3,4]},
+'Addetto produzione / confezionamento':{r:[1,2,3,4,7],e:[0,1,3]},
+'Carrellista':{r:[1,3,6,14],e:[0,1,10]},
+'Manutentore':{r:[1,2,3,4,5,7,13,15],e:[0,1,3]},
+'Elettricista':{r:[1,3,13,17],e:[0,1]},
+'Idraulico':{r:[1,2,3,7,8],e:[0,1,5]},
+'Muratore':{r:[1,2,3,4,5,9,10,13],e:[0,1,3,4]},
+'OSS / assistente sanitario':{r:[1,2,3,8,11],e:[0,1,9]},
+'Infermiere':{r:[2,3,8,11],e:[0,1,9]},
+'Addetto mensa':{r:[1,2,3,7,10],e:[0,1,5]},
+'Panettiere / pizzaiolo':{r:[1,2,3,9,10],e:[0,1,4]},
+'Parrucchiere':{r:[2,3,7,8],e:[0,1,5]},
+'Commesso / addetto vendita':{r:[1,3],e:[0,1]},
+'Addetto giardinaggio':{r:[1,2,3,4,5,7,8,10],e:[0,1,3,5]},
+'Addetto raccolta rifiuti':{r:[1,2,3,4,8,10],e:[0,1,3]},
+'Vigilante / portiere':{r:[3,11,12],e:[0,1,9]},
+'Addetto lavanderia':{r:[1,2,3,7,10],e:[0,1,5]}
+};
+const $=id=>document.getElementById(id);let riskNames=[...R],examNames=[...E];
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function renderChips(el,names,selected){$(el).innerHTML='';names.forEach((name,i)=>{let label=document.createElement('label');label.className='chip';let c=document.createElement('input');c.type='checkbox';c.value=name;c.checked=selected.includes(i);let span=document.createElement('span');span.textContent=name;label.append(c,span);$(el).append(label)})}
+function selected(id){return [...$(id).querySelectorAll('input:checked')].map(x=>x.value)}
+function selectRole(){let role=$('role').value,model=P[role]||{r:[],e:[0]};riskNames=[...R];examNames=[...E];renderChips('risks',riskNames,model.r);renderChips('exams',examNames,model.e);$('frequency').selectedIndex=0;$('result').classList.remove('show');$('notes').value='';$('status').textContent=''}
+function fillRoles(){let old=$('role').value;$('role').replaceChildren();Object.keys(P).sort((a,b)=>a.localeCompare(b,'it')).forEach(x=>{let o=document.createElement('option');o.textContent=x;o.value=x;$('role').append(o)});if(P[old])$('role').value=old;selectRole()}
+$('role').onchange=selectRole;fillRoles();
+$('addRole').onclick=()=>{let n=$('newRole').value.trim();if(!n)return;if(!P[n])P[n]={r:[],e:[0]};fillRoles();$('role').value=n;selectRole();$('newRole').value=''};
+function addChip(input,list,where){let value=$(input).value.trim();if(!value)return;let chosen=selected(where);if(!list.includes(value))list.push(value);chosen.push(value);renderChips(where,list,chosen.map(x=>list.indexOf(x)));$(input).value=''}
+$('addRisk').onclick=()=>addChip('otherRisk',riskNames,'risks');$('addExam').onclick=()=>addChip('otherExam',examNames,'exams');
+function data(){return{version:1,created:new Date().toLocaleDateString('it-IT'),role:$('role').value,company:$('company').value,risks:selected('risks'),exams:selected('exams'),frequency:$('frequency').value,notes:$('notes').value,validated:false}}
+function show(d){let li=a=>a.length?a.map(x=>'<li>'+escapeHtml(x)+'</li>').join(''):'<li>Nessuna selezione: verificare il DVR</li>';$('content').innerHTML='<p><b>Mansione:</b> '+escapeHtml(d.role)+'</p><p><b>Azienda:</b> '+escapeHtml(d.company||'Non indicata')+'</p><p><b>Data bozza:</b> '+escapeHtml(d.created)+'</p><h3>Rischi selezionati (da confrontare con DVR)</h3><ul>'+li(d.risks)+'</ul><h3>Accertamenti proposti (da motivare)</h3><ul>'+li(d.exams)+'</ul><p><b>Periodicità:</b> '+escapeHtml(d.frequency)+'</p><p><b>Note:</b> '+escapeHtml(d.notes||'Non inserite')+'</p><p><b>Stato:</b> bozza non validata</p>';$('result').classList.add('show')}
+$('preview').onclick=()=>{show(data());$('result').scrollIntoView({behavior:'smooth',block:'start'})};
+$('save').onclick=()=>{try{let d=data();localStorage.setItem('protocolli:'+d.role+':'+d.company,JSON.stringify(d));$('status').textContent='Bozza salvata su questo dispositivo (browser).'}catch(e){$('status').textContent='Salvataggio non disponibile: usa Esporta JSON.'}};
+function download(d){let blob=new Blob([JSON.stringify(d,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='protocollo-'+d.role.toLowerCase().replace(/[^a-z0-9]+/g,'-')+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
+$('export').onclick=()=>download(data());$('importBtn').onclick=()=>$('file').click();
+$('file').onchange=async ev=>{try{let d=JSON.parse(await ev.target.files[0].text());if(!d||typeof d.role!=='string'||!Array.isArray(d.risks)||!Array.isArray(d.exams))throw Error('Formato non valido');if(!P[d.role])P[d.role]={r:[],e:[0]};fillRoles();$('role').value=d.role;selectRole();riskNames=[...new Set([...R,...d.risks])];examNames=[...new Set([...E,...d.exams])];renderChips('risks',riskNames,d.risks.map(x=>riskNames.indexOf(x)));renderChips('exams',examNames,d.exams.map(x=>examNames.indexOf(x)));$('company').value=d.company||'';$('notes').value=d.notes||'';if([...$('frequency').options].some(x=>x.value===d.frequency))$('frequency').value=d.frequency;show(data());$('status').textContent='Bozza importata.'}catch(e){$('status').textContent='Importazione non riuscita: '+e.message}ev.target.value=''};
+$('print').onclick=()=>{show(data());window.print()};
+</script></body></html>
